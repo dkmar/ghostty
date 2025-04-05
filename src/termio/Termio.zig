@@ -527,6 +527,27 @@ pub fn jumpToPrompt(self: *Termio, delta: isize) !void {
     try self.renderer_wakeup.notify();
 }
 
+pub fn clearToPreviousMark(self: *Termio) !void {
+    self.renderer_state.mutex.lock();
+    defer self.renderer_state.mutex.unlock();
+    // get kill region
+    const region = self.terminal.screen.selectPreviousRegion() orelse return;
+    const y1 = region.start().y;
+    const y2 = region.end().y;
+    const delta = y2 - y1;
+    // move cursor to start of region
+    // todo what if out of bounds
+    // self.terminal.setCursorPos(y1+1, 1);
+    // Scroll first?
+    self.terminal.screen.scroll(.{ .delta_prompt = -1 });
+    self.terminal.cursorUp(delta);
+    // delete lines
+    self.terminal.deleteLines(delta+1);
+    // render
+    self.terminal.screen.cursorReload();
+    try self.renderer_wakeup.notify();
+}
+
 /// Called when the child process exited abnormally but before
 /// the surface is notified.
 pub fn childExitedAbnormally(self: *Termio, exit_code: u32, runtime_ms: u64) !void {

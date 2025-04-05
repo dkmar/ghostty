@@ -4109,6 +4109,12 @@ pub fn performBindingAction(self: *Surface, action: input.Binding.Action) !bool 
             }, .unlocked);
         },
 
+        .clear_to_previous_mark => {
+            self.io.queueMessage(.{
+                .clear_to_previous_mark = {},
+            }, .unlocked);
+        },
+
         .write_screen_file => |v| try self.writeScreenFile(
             .screen,
             v,

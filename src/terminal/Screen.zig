@@ -1377,6 +1377,104 @@ pub fn clearPrompt(self: *Screen) void {
     }
 }
 
+// pub fn clearToPreviousMark(self: *Screen) void {
+//     const active_pin = self.pages.pin(.{ .active = .{} });
+//     const cursor_pin = self.cursor.page_pin;
+
+//     // Start scanning up from cursor to find the previous prompt mark
+//     var it = cursor_pin.rowIterator(.left_up, active_pin);
+//     var found: ?Pin = null;
+
+//     while (it.next()) |p| {
+//         const row = p.rowAndCell().row;
+//         switch (row.semantic_prompt) {
+//             .input => {
+//                 if (found != null) break;
+//                 found = p;
+//             },
+//             .prompt, .prompt_continuation => {
+//                 found = p;
+//                 break;
+//             },
+//             .command => break,
+//             .unknown => {},
+//         }
+//     }
+
+//     if (found) |start_pin| {
+//         const start_point = self.pages.pointFromPin(.active, start_pin) orelse return;
+//         const end_point = self.pages.pointFromPin(.active, cursor_pin.*) orelse return;
+
+//         self.pages.eraseRows(start_point, end_point);
+//     }
+// }
+//
+
+/// Clear the screen contents from the current cursor position up to the
+/// previous prompt mark. If no previous prompt mark is found in the active
+/// area, this function does nothing. The cursor position is moved to the
+/// location of the previous mark (start of the prompt line) after clearing.
+/// This does not affect scrollback.
+// pub fn clearToPreviousMark(self: *Screen) void {
+//     const active_pin = self.pages.pin(.{ .active = .{} });
+//     const cursor_pin = self.cursor.page_pin;
+
+//     // Start scanning up from cursor to find the previous prompt mark
+//     var it = cursor_pin.rowIterator(.left_up, active_pin);
+//     var found: ?Pin = null;
+//     while (it.next()) |p| {
+//         const row = p.rowAndCell().row;
+//         switch (row.semantic_prompt) {
+//             .input => {
+//                 // If we already found a prompt, stop searching upwards
+//                 // to avoid clearing multiple prompts if the cursor is
+//                 // already on an earlier prompt line.
+//                 if (found != null) break;
+//                 found = p;
+//             },
+//             .prompt, .prompt_continuation => {
+//                 found = p;
+//                 break; // Found the start of the previous prompt
+//             },
+//             .command => break, // Hit command output, stop searching
+//             .unknown => {}, // Keep searching upwards
+//         }
+//     }
+
+//     // If we found a previous prompt mark
+//     if (found) |start_pin| {
+//         // Convert the start and current cursor pins to points within the active area.
+//         // If conversion fails (e.g., pin is somehow outside active area), do nothing.
+//         const start_point = self.pages.pointFromPin(.active, start_pin) orelse return;
+//         const end_point = self.pages.pointFromPin(.active, cursor_pin.*) orelse return;
+
+//         // Erase the rows from the start point (previous mark) up to the end point (current cursor).
+//         self.pages.eraseRows(start_point, end_point);
+
+//         // `eraseRows` internally calls `cursorReload`, which might reset the cursor
+//         // to the top-left if the entire active area was cleared (e.g., clearing the
+//         // very first prompt). We explicitly want the cursor positioned at the
+//         // start_pin location (the beginning of the previous prompt line).
+//         // self.cursorAbsolute(start_pin.x, start_pin.y);
+
+//         // Mark the new cursor position dirty so the renderer updates its location.
+//         self.cursorMarkDirty();
+//     } else {
+//         // No previous mark found in the active area, do nothing.
+//         log.debug("Clear to Previous Mark: No previous mark found in active area.", .{});
+//     }
+// }
+pub fn selectPreviousRegion(self: *Screen) ?Selection {
+    const cursor_pin = self.cursor.page_pin;
+    const current_prompt = self.selectPrompt(cursor_pin.*) orelse return null;
+    // consider above (multiline prompt header?)
+    const prev_pin = current_prompt.start().up(2) orelse return null;
+    const prev_output = self.selectOutput(prev_pin) orelse return null;
+    const prev_prompt_pin = prev_output.start().up(1) orelse return null;
+    const prev_prompt = self.selectPrompt(prev_prompt_pin) orelse return null;
+    return Selection.init(prev_prompt.start(), prev_output.end(), false);
+}
+
 /// Clean up boundary conditions where a cell will become discontiguous with
 /// a neighboring cell because either one of them will be moved and/or cleared.
 ///

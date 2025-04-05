@@ -4702,6 +4702,11 @@ pub const Keybinds = struct {
                 .{ .key = .{ .translated = .down }, .mods = .{ .super = true, .shift = true } },
                 .{ .jump_to_prompt = 1 },
             );
+            try self.set.put(
+                alloc,
+                .{ .key = .{ .translated = .l }, .mods = .{ .super = true } },
+                .{ .clear_to_previous_mark = {} },
+            );
 
             // Mac windowing
             try self.set.put(

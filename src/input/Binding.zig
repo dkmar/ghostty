@@ -272,6 +272,7 @@ pub const Action = union(enum) {
 
     /// Clear the screen. This also clears all scrollback.
     clear_screen: void,
+    clear_to_previous_mark: void,
 
     /// Select all text on the screen.
     select_all: void,
@@ -771,6 +772,7 @@ pub const Action = union(enum) {
             .reset_font_size,
             .prompt_surface_title,
             .clear_screen,
+            .clear_to_previous_mark,
             .select_all,
             .scroll_to_top,
             .scroll_to_bottom,

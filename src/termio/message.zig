@@ -44,6 +44,9 @@ pub const Message = union(enum) {
         history: bool,
     },
 
+    /// Clear the previous command
+    clear_to_previous_mark: void,
+
     /// Scroll the viewport
     scroll_viewport: terminal.Terminal.ScrollViewport,
 
