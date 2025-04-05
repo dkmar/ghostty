@@ -537,14 +537,14 @@ pub fn clearToPreviousMark(self: *Termio) !void {
     const delta = y2 - y1;
     // move cursor to start of region
     // todo what if out of bounds
-    // self.terminal.setCursorPos(y1+1, 1);
     // Scroll first?
     self.terminal.screen.scroll(.{ .delta_prompt = -1 });
+    // self.terminal.setCursorPos(y1+1, region.start().x+1);
     self.terminal.cursorUp(delta);
     // delete lines
     self.terminal.deleteLines(delta+1);
     // render
-    self.terminal.screen.cursorReload();
+    // self.terminal.screen.cursorReload(); // does this help?
     try self.renderer_wakeup.notify();
 }
 
