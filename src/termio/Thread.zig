@@ -279,7 +279,7 @@ fn drainMailbox(
             .resize => |v| self.handleResize(cb, v),
             .size_report => |v| try io.sizeReport(data, v),
             .clear_screen => |v| try io.clearScreen(data, v.history),
-            .clear_to_previous_mark => try io.clearToPreviousMark(),
+            .clear_to_previous_mark => try io.clearToPreviousMark(data),
             .scroll_viewport => |v| try io.scrollViewport(v),
             .jump_to_prompt => |v| try io.jumpToPrompt(v),
             .start_synchronized_output => self.startSynchronizedOutput(cb),
